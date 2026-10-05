@@ -1,0 +1,21 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+scikit-learn>=1.4
+numpy>=1.26
+pandas>=2.0
+networkx>=3.2
+joblib>=1.3
+pydantic>=2.5
+# Optional upgrade path (transformer emotion/sarcasm model, see README):
+# transformers>=4.40
+# torch
+# --- live collectors ---
+python-dotenv>=1.0
+praw>=7.7
+google-api-python-client>=2.0
+telethon>=1.34
+# --- strong sentiment model (transformer) ---
+transformers>=4.40
+torch>=2.2
+sentencepiece>=0.2
+yt-dlp>=2025.1

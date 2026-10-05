@@ -1,0 +1,422 @@
+<title>Emotion Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f5; --panel:#ffffff; --panel-2:#fbfbfa; --edge:#e4e6e2; --edge-2:#eceee9;
+    --ink:#1a2230; --ink-dim:#5c6675; --ink-faint:#9aa3af;
+    --accent:#2b6fb0;
+    --emo-supportive:#12996a; --emo-excitement:#2b83cf; --emo-anxiety:#c9800f;
+    --emo-sarcasm:#8353c9; --emo-against:#db3f57;
+    --ramp-lo:#eceae4;
+    --shadow:0 1px 2px rgba(20,30,45,.05),0 6px 20px rgba(20,30,45,.06);
+    --disp:"Sora",system-ui,sans-serif; --sans:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0a0e15; --panel:#0f1622; --panel-2:#131c2a; --edge:#222d3f; --edge-2:#1a2333;
+    --ink:#e3e9f2; --ink-dim:#93a1b6; --ink-faint:#5a6678;
+    --accent:#5aa0e6;
+    --emo-supportive:#2fd39a; --emo-excitement:#4fb0f5; --emo-anxiety:#f2ad3e;
+    --emo-sarcasm:#b48cf0; --emo-against:#ff6d80;
+    --ramp-lo:#151d2a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#0a0e15; --panel:#0f1622; --panel-2:#131c2a; --edge:#222d3f; --edge-2:#1a2333;
+    --ink:#e3e9f2; --ink-dim:#93a1b6; --ink-faint:#5a6678;
+    --accent:#5aa0e6;
+    --emo-supportive:#2fd39a; --emo-excitement:#4fb0f5; --emo-anxiety:#f2ad3e;
+    --emo-sarcasm:#b48cf0; --emo-against:#ff6d80;
+    --ramp-lo:#151d2a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding-block:20px 44px;padding-left:16px;padding-right:16px}
+
+  header.top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .htext h1{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.01em;margin:0}
+  .htext p{margin:5px 0 0;color:var(--ink-dim);font-size:13.5px;max-width:60ch}
+  .topicsel{margin-left:auto;display:flex;flex-direction:column;gap:5px}
+  .topicsel label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  select{font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--edge);
+    border-radius:9px;padding:9px 12px;min-width:230px;cursor:pointer;box-shadow:var(--shadow)}
+
+  .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:16px}
+  @media (max-width:840px){.layout{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;box-shadow:var(--shadow)}
+  .card .hd{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--edge-2);flex-wrap:wrap}
+  .card .hd h2{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.01em;margin:0}
+  .card .hd .sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-left:auto}
+
+  /* emotion toggle */
+  .emobar{display:flex;gap:6px;flex-wrap:wrap;padding:12px 15px 4px}
+  .emobtn{font-family:var(--sans);font-size:12.5px;font-weight:500;color:var(--ink-dim);background:var(--panel-2);
+    border:1px solid var(--edge);border-radius:999px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .14s}
+  .emobtn .dot{width:10px;height:10px;border-radius:3px}
+  .emobtn:hover{color:var(--ink)}
+  .emobtn[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+
+  /* map */
+  .mapwrap{position:relative;padding:6px 15px 14px}
+  .map{display:grid;grid-template-columns:repeat(13,1fr);gap:5px;max-width:600px;margin:6px auto 0}
+  .tile{aspect-ratio:1;border-radius:6px;border:1px solid var(--edge-2);display:grid;place-items:center;
+    font-family:var(--mono);font-size:9px;font-weight:500;cursor:pointer;position:relative;
+    transition:transform .1s,box-shadow .1s,outline .1s;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);user-select:none}
+  .tile:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.18);z-index:3}
+  .tile.sel{outline:2.5px solid var(--ink);outline-offset:1px;z-index:4}
+  .tile .lab{pointer-events:none}
+  @media (max-width:520px){.tile{font-size:7.5px;border-radius:4px}.map{gap:3px}}
+
+  /* legend */
+  .legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:2px 15px 14px;max-width:600px;margin:0 auto}
+  .ramp{height:12px;flex:1;min-width:160px;border-radius:6px;border:1px solid var(--edge-2)}
+  .legend .lm{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim)}
+  .legcat{display:flex;gap:14px;flex-wrap:wrap;padding:2px 15px 14px;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+  .legcat span{display:inline-flex;align-items:center;gap:6px}
+  .legcat .dot{width:11px;height:11px;border-radius:3px}
+
+  /* tooltip */
+  .tip{position:fixed;z-index:50;pointer-events:none;background:var(--panel);border:1px solid var(--edge);
+    border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;min-width:180px;opacity:0;transition:opacity .1s}
+  .tip.on{opacity:1}
+  .tip h4{margin:0 0 2px;font-family:var(--disp);font-size:13.5px;font-weight:600}
+  .tip .vol{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-bottom:7px}
+  .tiprow{display:grid;grid-template-columns:66px 1fr 30px;align-items:center;gap:7px;margin:3px 0}
+  .tiprow .k{font-size:11px;color:var(--ink-dim)}
+  .tiprow .bar{height:6px;border-radius:3px;background:var(--edge-2);overflow:hidden}
+  .tiprow .bar i{display:block;height:100%;border-radius:3px}
+  .tiprow .pv{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);text-align:right}
+
+  /* insight panel */
+  .insight{padding:14px 16px;display:flex;flex-direction:column;gap:16px}
+  .natmood .mtitle,.blk .mtitle{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:8px}
+  .stack{display:flex;height:26px;border-radius:7px;overflow:hidden;border:1px solid var(--edge-2)}
+  .stack i{height:100%;position:relative}
+  .stacklab{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-dim)}
+  .stacklab span{display:inline-flex;align-items:center;gap:5px}
+  .stacklab .dot{width:9px;height:9px;border-radius:2px}
+  .narr{font-size:13.5px;line-height:1.6;color:var(--ink)}
+  .narr b{font-weight:600}
+  .narr .em{padding:0 4px;border-radius:4px;font-weight:600;color:#fff}
+  .toplist{display:flex;flex-direction:column;gap:7px}
+  .tl{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:10px}
+  .tl .rk{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+  .tl .nm{font-size:13px;font-weight:500}
+  .tl .track{grid-column:1/-1;height:6px;border-radius:3px;background:var(--edge-2);overflow:hidden;margin-top:-2px}
+  .tl .track i{display:block;height:100%;border-radius:3px}
+  .tl .pc{font-family:var(--mono);font-size:11.5px;color:var(--ink-dim)}
+  .region-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .rs{border:1px solid var(--edge-2);border-radius:9px;padding:9px 11px;background:var(--panel-2)}
+  .rs .rn{font-size:12px;color:var(--ink-dim)}
+  .rs .rv{font-family:var(--disp);font-weight:600;font-size:14px;margin-top:2px}
+
+  .foot{margin-top:22px;font-size:12px;color:var(--ink-faint);line-height:1.6;border-top:1px solid var(--edge-2);padding-top:12px}
+  .foot code{font-family:var(--mono);font-size:11px;color:var(--accent)}
+  .themebtn{position:fixed;right:14px;bottom:14px;z-index:60;width:38px;height:38px;border-radius:10px;
+    border:1px solid var(--edge);background:var(--panel);color:var(--ink-dim);cursor:pointer;box-shadow:var(--shadow);font-size:16px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="htext">
+      <h1>Emotion Atlas</h1>
+      <p>How India feels about a topic, state by state. Pick an emotion to see where it runs hot, or switch to <b>Dominant</b> to see which feeling wins each state.</p>
+    </div>
+    <div class="topicsel">
+      <label for="topic">Topic</label>
+      <select id="topic"></select>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="card">
+      <div class="hd"><h2>State emotion map</h2><span class="sub" id="modeSub">intensity · % of posts</span></div>
+      <div class="emobar" id="emobar"></div>
+      <div class="mapwrap">
+        <div class="map" id="map" role="group" aria-label="India state emotion map"></div>
+      </div>
+      <div class="legend" id="legendSeq" hidden>
+        <span class="lm" id="legLo">0%</span>
+        <div class="ramp" id="ramp"></div>
+        <span class="lm" id="legHi">100%</span>
+        <span class="lm" id="legEmo" style="min-width:100%;text-align:center"></span>
+      </div>
+      <div class="legcat" id="legendCat" hidden></div>
+    </section>
+
+    <aside class="card">
+      <div class="hd"><h2 id="insightTitle">Read this topic</h2></div>
+      <div class="insight">
+        <div class="natmood">
+          <div class="mtitle">National mood <span id="natN" style="color:var(--ink-faint)"></span></div>
+          <div class="stack" id="natStack"></div>
+          <div class="stacklab" id="natStackLab"></div>
+        </div>
+        <div class="blk narrWrap">
+          <div class="mtitle">What the map says</div>
+          <div class="narr" id="narr"></div>
+        </div>
+        <div class="blk" id="topBlk">
+          <div class="mtitle" id="topTitle">Where it runs hottest</div>
+          <div class="toplist" id="toplist"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <b>Prototype with synthetic data.</b> In the live build these tiles are driven by the sentiment model over geo-tagged / bio-inferred posts (Component B + C), aggregated per state on the timeline. Emotion palette validated colorblind-safe. Hover a state for its full breakdown; tap to pin it.
+  </div>
+</div>
+<button class="themebtn" id="themebtn" title="Toggle theme" aria-label="Toggle light/dark">◑</button>
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $=function(s){return document.getElementById(s);};
+  function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+
+  var EMO=[
+    {k:'supportive',label:'Supportive',v:'--emo-supportive'},
+    {k:'excitement',label:'Excitement',v:'--emo-excitement'},
+    {k:'anxiety',   label:'Anxiety',   v:'--emo-anxiety'},
+    {k:'sarcasm',   label:'Sarcasm',   v:'--emo-sarcasm'},
+    {k:'against',   label:'Against',   v:'--emo-against'}
+  ];
+  function ecol(k){return cssv(EMO.filter(function(e){return e.k===k;})[0].v);}
+
+  // r,c,region,abbr,name,vol
+  var STATES=[
+    [0,7,'N','LA','Ladakh',1],[1,6,'N','JK','Jammu & Kashmir',2],
+    [2,6,'N','PB','Punjab',3],[2,7,'N','HP','Himachal Pradesh',1],[2,8,'N','UK','Uttarakhand',2],
+    [3,6,'N','HR','Haryana',3],[3,7,'N','DL','Delhi',4],[3,8,'N','UP','Uttar Pradesh',10],[3,11,'NE','AR','Arunachal',1],
+    [4,5,'W','RJ','Rajasthan',5],[4,9,'E','BR','Bihar',7],[4,10,'NE','SK','Sikkim',1],[4,11,'NE','AS','Assam',3],[4,12,'NE','NL','Nagaland',1],
+    [5,4,'W','GJ','Gujarat',5],[5,6,'C','MP','Madhya Pradesh',5],[5,9,'E','JH','Jharkhand',4],[5,10,'E','WB','West Bengal',7],[5,11,'NE','ML','Meghalaya',1],[5,12,'NE','MN','Manipur',1],
+    [6,5,'W','MH','Maharashtra',9],[6,7,'C','CG','Chhattisgarh',3],[6,9,'E','OD','Odisha',4],[6,11,'NE','TR','Tripura',1],[6,12,'NE','MZ','Mizoram',1],
+    [7,4,'W','GA','Goa',1],[7,6,'S','TG','Telangana',4],
+    [8,5,'S','KA','Karnataka',6],[8,6,'S','AP','Andhra Pradesh',5],[8,9,'S','AN','Andaman & Nic.',1],
+    [9,3,'S','LD','Lakshadweep',1],[9,5,'S','KL','Kerala',4],[9,6,'S','TN','Tamil Nadu',6]
+  ].map(function(a){return {r:a[0],c:a[1],reg:a[2],ab:a[3],name:a[4],vol:a[5]};});
+
+  // topic: regionWeights [sup,exc,anx,sar,agn] + overrides + volMult
+  var TOPICS=[
+    {id:'nep',name:'National Education Policy',volMult:1.0,
+     reg:{N:[40,15,15,10,20],C:[38,12,18,10,22],W:[34,14,18,12,22],E:[28,12,22,12,26],S:[18,10,24,12,36],NE:[26,10,30,10,24]},
+     ov:{TN:[12,8,20,10,50],KL:[15,8,22,10,45],KA:[22,10,22,12,34],DL:[42,16,14,10,18]}},
+    {id:'flood',name:'Monsoon Floods & Relief',volMult:1.15,
+     reg:{N:[25,8,30,12,25],C:[22,8,34,12,24],W:[20,7,40,10,23],E:[18,6,46,10,20],S:[22,7,40,10,21],NE:[16,6,50,10,18]},
+     ov:{KL:[16,5,55,8,16],AS:[14,5,58,8,15],BR:[16,5,52,10,17],WB:[17,6,50,9,18],MH:[21,6,44,9,20],GJ:[22,6,42,9,21]}},
+    {id:'cwc',name:'Cricket World Cup Final',volMult:1.4,
+     reg:{N:[30,45,8,12,5],C:[30,46,7,12,5],W:[28,48,7,12,5],E:[30,45,9,11,5],S:[26,50,8,12,4],NE:[30,44,9,12,5]},
+     ov:{MH:[27,50,7,11,5],DL:[28,49,7,11,5],TN:[24,52,8,12,4]}},
+    {id:'digital',name:'New Digital Payments Rule',volMult:0.9,
+     reg:{N:[34,14,20,14,18],C:[32,12,22,14,20],W:[36,15,18,13,18],E:[28,11,26,13,22],S:[33,13,20,14,20],NE:[26,10,28,14,22]},
+     ov:{KA:[40,16,16,13,15],MH:[38,15,17,13,17],TN:[30,12,22,14,22]}}
+  ];
+
+  var state={topic:'nep',emotion:'against'}; // default emotion mode
+  var DATA={}; // topicId -> {states:[{...dist,vol}], nat:[...], min/max per emo}
+
+  // deterministic noise
+  function seed(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+  function norm(a){var s=a.reduce(function(x,y){return x+y;},0)||1;return a.map(function(v){return v/s;});}
+
+  function compute(topic){
+    var out={states:[],nat:[0,0,0,0,0],vsum:0,ext:{}};
+    STATES.forEach(function(st){
+      var base=(topic.ov[st.ab]||topic.reg[st.reg]).slice();
+      var d=base.map(function(v,i){
+        var n=(seed(topic.id+st.ab+i)-0.5)*7; return Math.max(1,v+n);
+      });
+      d=norm(d);
+      var vol=Math.round(st.vol*topic.volMult*(0.8+seed(topic.id+st.ab+'v')*0.5)*130);
+      var rec={ab:st.ab,name:st.name,reg:st.reg,r:st.r,c:st.c,d:d,vol:vol};
+      out.states.push(rec);
+      out.vsum+=vol;
+      d.forEach(function(v,i){out.nat[i]+=v*vol;});
+    });
+    out.nat=out.nat.map(function(v){return v/out.vsum;});
+    // per emotion min/max share across states
+    EMO.forEach(function(e,i){
+      var vals=out.states.map(function(s){return s.d[i];});
+      out.ext[e.k]={min:Math.min.apply(null,vals),max:Math.max.apply(null,vals)};
+    });
+    return out;
+  }
+  TOPICS.forEach(function(t){DATA[t.id]=compute(t);});
+
+  // ---- color helpers ----
+  function hx(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+  function rc(a){return 'rgb('+a.map(function(v){return Math.round(v);}).join(',')+')';}
+  function rampColor(emoKey,t){ // t 0..1
+    var lo=hx(cssv('--ramp-lo')), hi=hx(ecol(emoKey));
+    var dark=mix(hi,[0,0,0],0.18);
+    if(t<0.5) return rc(mix(lo,hi,t/0.5));
+    return rc(mix(hi,dark,(t-0.5)/0.5));
+  }
+
+  // ---- render ----
+  var mapEl=$('map'), tip=$('tip');
+  function idx(k){for(var i=0;i<EMO.length;i++)if(EMO[i].k===k)return i;return 0;}
+
+  function render(){
+    var D=DATA[state.topic];
+    var dominantMode = state.emotion==='dominant';
+    $('modeSub').textContent = dominantMode?'dominant emotion per state':'intensity · % of posts';
+    mapEl.innerHTML='';
+    D.states.forEach(function(s){
+      var tile=document.createElement('div');tile.className='tile';
+      tile.style.gridColumn=(s.c+1); tile.style.gridRow=(s.r+1);
+      var fill,lum;
+      if(dominantMode){
+        var mi=0;for(var i=1;i<5;i++)if(s.d[i]>s.d[mi])mi=i;
+        fill=ecol(EMO[mi].k); lum=0.5+ s.d[mi]*0.5;
+        tile.style.background=fill; tile.style.opacity=Math.max(0.55,Math.min(1,0.5+s.d[mi]));
+      } else {
+        var e=idx(state.emotion), ex=D.ext[state.emotion];
+        var t=(s.d[e]-ex.min)/((ex.max-ex.min)||1);
+        tile.style.background=rampColor(state.emotion,t); tile.style.opacity=1;
+        // dark text on very light tiles
+        if(t<0.28){tile.style.color=cssv('--ink');tile.style.textShadow='none';}
+      }
+      tile.innerHTML='<span class="lab">'+s.ab+'</span>';
+      if(state.pin===s.ab)tile.classList.add('sel');
+      tile.addEventListener('mousemove',function(ev){showTip(ev,s);});
+      tile.addEventListener('mouseenter',function(ev){showTip(ev,s);});
+      tile.addEventListener('mouseleave',hideTip);
+      tile.addEventListener('click',function(){state.pin=(state.pin===s.ab?null:s.ab);render();renderInsight();});
+      mapEl.appendChild(tile);
+    });
+    // legends
+    if(dominantMode){
+      $('legendSeq').hidden=true; var lc=$('legendCat'); lc.hidden=false; lc.innerHTML='';
+      EMO.forEach(function(e){lc.innerHTML+='<span><i class="dot" style="background:'+ecol(e.k)+'"></i>'+e.label+'</span>';});
+    } else {
+      $('legendCat').hidden=true; var ls=$('legendSeq'); ls.hidden=false;
+      var ex=D.ext[state.emotion];
+      $('ramp').style.background='linear-gradient(90deg,'+rampColor(state.emotion,0)+','+rampColor(state.emotion,0.5)+','+rampColor(state.emotion,1)+')';
+      $('legLo').textContent=Math.round(ex.min*100)+'%';
+      $('legHi').textContent=Math.round(ex.max*100)+'%';
+      $('legEmo').textContent=EMO[idx(state.emotion)].label+' — share of posts per state';
+      $('legEmo').style.color=ecol(state.emotion);
+    }
+  }
+
+  function showTip(ev,s){
+    var rows=EMO.map(function(e,i){
+      return '<div class="tiprow"><span class="k">'+e.label+'</span><div class="bar"><i style="width:'+
+        (s.d[i]*100).toFixed(0)+'%;background:'+ecol(e.k)+'"></i></div><span class="pv">'+(s.d[i]*100).toFixed(0)+'%</span></div>';
+    }).join('');
+    tip.innerHTML='<h4>'+s.name+'</h4><div class="vol">'+s.vol.toLocaleString()+' posts analysed</div>'+rows;
+    tip.classList.add('on');
+    var pad=14,w=tip.offsetWidth,h=tip.offsetHeight;
+    var x=ev.clientX+pad, y=ev.clientY+pad;
+    if(x+w>innerWidth-8)x=ev.clientX-w-pad; if(y+h>innerHeight-8)y=ev.clientY-h-pad;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function hideTip(){tip.classList.remove('on');}
+
+  var REGNAME={N:'North',S:'South',E:'East',W:'West',C:'Central',NE:'Northeast'};
+  function topStates(D,emoKey,n){
+    var e=idx(emoKey);
+    return D.states.slice().sort(function(a,b){return b.d[e]-a.d[e];}).slice(0,n);
+  }
+  function domOf(dist){var mi=0;for(var i=1;i<5;i++)if(dist[i]>dist[mi])mi=i;return mi;}
+  function emSpan(k){return '<span class="em" style="background:'+ecol(k)+'">'+EMO[idx(k)].label.toLowerCase()+'</span>';}
+
+  function renderInsight(){
+    var D=DATA[state.topic], T=TOPICS.filter(function(t){return t.id===state.topic;})[0];
+    $('insightTitle').textContent=T.name;
+    $('natN').textContent='· '+D.vsum.toLocaleString()+' posts';
+    // national stack
+    var stack=$('natStack');stack.innerHTML='';var lab=$('natStackLab');lab.innerHTML='';
+    EMO.forEach(function(e,i){
+      var seg=document.createElement('i');seg.style.width=(D.nat[i]*100)+'%';seg.style.background=ecol(e.k);
+      seg.title=e.label+' '+(D.nat[i]*100).toFixed(0)+'%';stack.appendChild(seg);
+      lab.innerHTML+='<span><i class="dot" style="background:'+ecol(e.k)+'"></i>'+e.label+' '+(D.nat[i]*100).toFixed(0)+'%</span>';
+    });
+    var natDom=domOf(D.nat), natKey=EMO[natDom].k;
+
+    // narrative
+    var topSup=topStates(D,'supportive',2).map(function(s){return s.name;});
+    var topAgn=topStates(D,'against',2).map(function(s){return s.name;});
+    var topAnx=topStates(D,'anxiety',2).map(function(s){return s.name;});
+    var narr='Across India, <b>'+T.name+'</b> reads mostly '+emSpan(natKey)+
+      ' ('+(D.nat[natDom]*100).toFixed(0)+'% of posts). ';
+    if(natKey!=='supportive') narr+='Support is strongest in <b>'+topSup.join('</b> & <b>')+'</b>. ';
+    if(natKey!=='against') narr+='Opposition concentrates in <b>'+topAgn.join('</b> & <b>')+'</b>. ';
+    narr+='Anxiety peaks in <b>'+topAnx.join('</b> & <b>')+'</b>.';
+    $('narr').innerHTML=narr;
+
+    // top block: depends on mode
+    if(state.emotion==='dominant'){
+      $('topTitle').textContent='Regional read';
+      var regs={};
+      D.states.forEach(function(s){ if(!regs[s.reg])regs[s.reg]={n:[0,0,0,0,0],v:0};
+        s.d.forEach(function(v,i){regs[s.reg].n[i]+=v*s.vol;}); regs[s.reg].v+=s.vol;});
+      var html='<div class="region-sum">';
+      ['N','S','E','W','C','NE'].forEach(function(rk){ if(!regs[rk])return;
+        var avg=regs[rk].n.map(function(v){return v/regs[rk].v;}); var dk=EMO[domOf(avg)].k;
+        html+='<div class="rs"><div class="rn">'+REGNAME[rk]+'</div><div class="rv" style="color:'+ecol(dk)+'">'+
+          EMO[domOf(avg)].label+' <span style="color:var(--ink-faint);font-size:11px">'+(Math.max.apply(null,avg)*100).toFixed(0)+'%</span></div></div>';
+      });
+      html+='</div>'; $('toplist').innerHTML=html;
+    } else {
+      $('topTitle').textContent='Where '+EMO[idx(state.emotion)].label.toLowerCase()+' runs hottest';
+      var tops=topStates(D,state.emotion,5), e=idx(state.emotion), mx=D.ext[state.emotion].max;
+      var col=ecol(state.emotion), html='';
+      tops.forEach(function(s,i){
+        html+='<div class="tl"><span class="rk">'+(i+1)+'</span><span class="nm">'+s.name+'</span>'+
+          '<span class="pc">'+(s.d[e]*100).toFixed(0)+'%</span>'+
+          '<span class="track"><i style="width:'+(s.d[e]/mx*100)+'%;background:'+col+'"></i></span></div>';
+      });
+      $('toplist').innerHTML=html;
+    }
+  }
+
+  // ---- controls ----
+  var ts=$('topic');
+  TOPICS.forEach(function(t){var o=document.createElement('option');o.value=t.id;o.textContent=t.name;ts.appendChild(o);});
+  ts.value=state.topic;
+  ts.addEventListener('change',function(){state.topic=ts.value;state.pin=null;render();renderInsight();});
+
+  var eb=$('emobar');
+  EMO.forEach(function(e){
+    var b=document.createElement('button');b.className='emobtn';b.dataset.k=e.k;
+    b.setAttribute('aria-pressed',e.k===state.emotion);
+    b.innerHTML='<span class="dot" style="background:'+ecol(e.k)+'"></span>'+e.label;
+    eb.appendChild(b);
+  });
+  var domBtn=document.createElement('button');domBtn.className='emobtn';domBtn.dataset.k='dominant';
+  domBtn.setAttribute('aria-pressed',state.emotion==='dominant');
+  domBtn.innerHTML='<span class="dot" style="background:linear-gradient(90deg,var(--emo-supportive),var(--emo-against))"></span>Dominant';
+  eb.appendChild(domBtn);
+  eb.addEventListener('click',function(ev){var b=ev.target.closest('.emobtn');if(!b)return;
+    state.emotion=b.dataset.k;
+    [].forEach.call(eb.querySelectorAll('.emobtn'),function(x){x.setAttribute('aria-pressed',x.dataset.k===state.emotion);});
+    render();renderInsight();});
+
+  // theme toggle
+  $('themebtn').addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var isDark = cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
+    document.documentElement.setAttribute('data-theme', isDark?'light':'dark');
+    render();renderInsight();
+  });
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',function(){render();renderInsight();});
+
+  window.addEventListener('scroll',hideTip,{passive:true});
+
+  render(); renderInsight();
+})();
+</script>

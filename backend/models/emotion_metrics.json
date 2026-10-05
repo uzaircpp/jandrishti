@@ -1,0 +1,64 @@
+{
+  "samples": 2520,
+  "classes": [
+    "supportive",
+    "excitement",
+    "anxiety",
+    "sarcasm",
+    "against",
+    "neutral"
+  ],
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "report": {
+    "against": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "anxiety": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "excitement": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "neutral": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "sarcasm": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "supportive": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 84.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 504.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 504.0
+    }
+  }
+}

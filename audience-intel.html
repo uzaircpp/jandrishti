@@ -1,0 +1,440 @@
+<title>AudienceIntel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#080b12;
+    --panel:#0f1522;
+    --panel-2:#141c2c;
+    --edge:#20293c;
+    --grid:#1a2333;
+    --ink:#dde5f2;
+    --ink-dim:#8695ad;
+    --ink-faint:#4d5b73;
+    --accent:#4d9fff;
+    --pos:#35d69a;
+    --neg:#ff5a6e;
+    --neu:#7c8aa3;
+    --anx:#ffb454;
+    --sar:#b98cff;
+    --exc:#4de0d0;
+    --disp:"Sora",system-ui,sans-serif;
+    --sans:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:var(--sans);color:var(--ink);
+    background:radial-gradient(1100px 520px at 78% -12%,#111d30 0%,transparent 58%),var(--bg);
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1220px;margin:0 auto;padding-block:16px 40px;padding-left:16px;padding-right:16px}
+
+  /* header */
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    border:1px solid var(--edge);border-radius:14px;padding:12px 16px;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+  .brand{display:flex;align-items:center;gap:11px}
+  .mark{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;
+    background:#0b1a2b;border:1px solid #244a6e;box-shadow:0 0 16px rgba(77,159,255,.18) inset}
+  .brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.01em;margin:0;line-height:1}
+  .brand .sub{font-family:var(--mono);font-size:10px;color:var(--ink-dim);letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
+  .target{display:flex;align-items:center;gap:9px;margin-left:auto;flex-wrap:wrap}
+  .qbox{display:flex;align-items:center;gap:8px;border:1px solid var(--edge);border-radius:9px;
+    background:#0a1120;padding:8px 12px;font-family:var(--mono);font-size:13px}
+  .qbox .lbl{color:var(--ink-faint);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+  .qbox b{color:var(--accent);font-weight:500}
+  .live{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--pos)}
+  .pdot{width:8px;height:8px;border-radius:50%;background:var(--pos);box-shadow:0 0 10px var(--pos);animation:pulse 1.5s infinite}
+  @keyframes pulse{50%{opacity:.3}}
+
+  /* platform chips */
+  .plats{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .chip{font-family:var(--mono);font-size:12px;color:var(--ink-dim);border:1px solid var(--edge);
+    border-radius:999px;padding:6px 13px;background:var(--panel);cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+  .chip .ci{width:8px;height:8px;border-radius:2px;background:var(--ink-faint)}
+  .chip[aria-pressed="true"]{color:var(--ink);border-color:#2f4a6e;background:var(--panel-2)}
+  .chip[aria-pressed="true"] .ci{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .chip:hover{color:var(--ink)}
+  .chip .cnt{color:var(--ink-faint);font-size:11px}
+
+  /* kpi row */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+  .kpi{border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:13px 15px;position:relative;overflow:hidden}
+  .kpi .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+  .kpi .v{font-family:var(--disp);font-weight:700;font-size:26px;margin-top:4px;letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums}
+  .kpi .d{font-family:var(--mono);font-size:11px;margin-top:3px}
+  .kpi .d.up{color:var(--pos)} .kpi .d.down{color:var(--neg)}
+  .kpi .spark{position:absolute;right:12px;bottom:10px;opacity:.5}
+
+  /* main grid */
+  .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}
+  .col{display:flex;flex-direction:column;gap:12px;min-width:0}
+  .card{border:1px solid var(--edge);border-radius:13px;background:var(--panel);overflow:hidden;min-width:0}
+  .hd{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--edge);
+    background:linear-gradient(180deg,var(--panel-2),transparent)}
+  .hd h2{font-family:var(--disp);font-weight:600;font-size:13.5px;letter-spacing:.02em;margin:0}
+  .hd .tag{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ink-dim)}
+  .pad{padding:14px}
+
+  /* sentiment legend */
+  .sleg{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);padding:9px 14px;border-top:1px solid var(--edge)}
+  .sleg span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  canvas{display:block;width:100%}
+  .netwrap{position:relative;background:#070c15}
+  .netbadge{position:absolute;left:12px;top:10px;font-family:var(--mono);font-size:11px;color:var(--ink-dim);
+    background:#0a1120cc;border:1px solid var(--edge);border-radius:6px;padding:4px 9px;pointer-events:none}
+  .netbadge b{color:var(--accent);font-weight:500}
+
+  /* trends list */
+  .trend{display:flex;align-items:center;gap:11px;padding:10px 14px;border-bottom:1px solid var(--edge)}
+  .trend:last-child{border-bottom:none}
+  .trank{font-family:var(--mono);font-size:12px;color:var(--ink-faint);width:20px}
+  .tmain{min-width:0;flex:1}
+  .ttag{font-weight:600;font-size:14px}
+  .tmeta{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-top:1px}
+  .tdelta{font-family:var(--mono);font-size:12px;font-weight:500}
+  .tdelta.up{color:var(--pos)} .tdelta.hot{color:var(--anx)}
+  .tspark{width:64px;height:26px}
+
+  /* demographics */
+  .demo{padding:12px 14px;display:grid;gap:14px}
+  .dgroup .dt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:8px}
+  .drow{display:grid;grid-template-columns:74px 1fr 42px;align-items:center;gap:9px;margin-bottom:6px}
+  .drow .dl{font-size:12.5px;color:var(--ink)}
+  .dbar{height:8px;border-radius:4px;background:#0b1220;overflow:hidden}
+  .dbar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,#2f6fb0,var(--accent));transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .dval{font-family:var(--mono);font-size:11px;color:var(--ink-dim);text-align:right}
+
+  /* live feed */
+  .feed{max-height:262px;overflow-y:auto}
+  .post{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--edge);animation:slidein .35s ease}
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:grid;place-items:center;
+    font-family:var(--mono);font-size:11px;color:#0a1120;font-weight:600}
+  .pbody{min-width:0;flex:1}
+  .pmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+  .phandle{color:var(--ink);font-weight:500}
+  .pplat{font-size:10px;padding:1px 6px;border:1px solid var(--edge);border-radius:4px}
+  .ptext{font-size:13px;margin-top:4px;line-height:1.45;color:var(--ink)}
+  .emo{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;font-weight:500;white-space:nowrap}
+
+  .foot{margin-top:24px;border:1px solid var(--edge);border-left:2px solid var(--accent);border-radius:9px;
+    background:var(--panel);padding:13px 16px;color:var(--ink-dim);font-size:13px;line-height:1.6}
+  .foot b{color:var(--ink)}
+  .foot code{font-family:var(--mono);font-size:12px;color:var(--exc);background:#0a1120;padding:1px 6px;border-radius:4px}
+
+  @media (max-width:880px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+  @media (max-width:440px){.kpis{grid-template-columns:1fr 1fr}.brand h1{font-size:17px}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4d9fff" stroke-width="2" stroke-linecap="round">
+          <circle cx="5" cy="6" r="2.3"/><circle cx="19" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.6"/>
+          <path d="M7 7 10.5 16M17 7 13.5 16"/>
+        </svg>
+      </span>
+      <div>
+        <h1>AudienceIntel</h1>
+        <div class="sub">Social Media Analytics · SIH26152</div>
+      </div>
+    </div>
+    <div class="target">
+      <div class="qbox"><span class="lbl">Tracking</span> <b id="qTopic">#CityMetroLine3</b></div>
+      <div class="qbox"><span class="lbl">Window</span> <span id="qWin">Last 24h</span></div>
+      <span class="live"><span class="pdot"></span> <span id="liveTxt">Live ingest</span></span>
+    </div>
+  </header>
+
+  <div class="plats" id="plats">
+    <button class="chip" aria-pressed="true" data-p="X"><span class="ci"></span>X / Twitter <span class="cnt" data-c>18.4k</span></button>
+    <button class="chip" aria-pressed="true" data-p="TG"><span class="ci"></span>Telegram <span class="cnt" data-c>9.1k</span></button>
+    <button class="chip" aria-pressed="true" data-p="RD"><span class="ci"></span>Reddit <span class="cnt" data-c>6.7k</span></button>
+    <button class="chip" aria-pressed="true" data-p="YT"><span class="ci"></span>YouTube <span class="cnt" data-c>4.3k</span></button>
+    <button class="chip" aria-pressed="false" data-p="IG"><span class="ci"></span>Instagram <span class="cnt" data-c>2.9k</span></button>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="k">Posts ingested (24h)</div><div class="v" data-kpi="41438">0</div><div class="d up">▲ 12.4% vs prev</div><canvas class="spark" width="60" height="22"></canvas></div>
+    <div class="kpi"><div class="k">Net sentiment</div><div class="v" data-kpi="61" data-suffix="%">0</div><div class="d up">▲ 4 pts · leaning positive</div><canvas class="spark" width="60" height="22"></canvas></div>
+    <div class="kpi"><div class="k">Accounts mapped</div><div class="v" data-kpi="3812">0</div><div class="d up">▲ 218 new nodes</div><canvas class="spark" width="60" height="22"></canvas></div>
+    <div class="kpi"><div class="k">Rising trends</div><div class="v" data-kpi="7">0</div><div class="d down">2 turning negative</div><canvas class="spark" width="60" height="22"></canvas></div>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="hd"><h2>Sentiment over time</h2><span class="tag">emotion mix · hourly</span></div>
+        <canvas id="sent" width="760" height="220"></canvas>
+        <div class="sleg">
+          <span><i class="sw" style="background:var(--pos)"></i>supportive</span>
+          <span><i class="sw" style="background:var(--exc)"></i>excitement</span>
+          <span><i class="sw" style="background:var(--anx)"></i>anxiety</span>
+          <span><i class="sw" style="background:var(--sar)"></i>sarcasm</span>
+          <span><i class="sw" style="background:var(--neg)"></i>against</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>Influence network</h2><span class="tag">link analysis · centrality</span></div>
+        <div class="netwrap">
+          <canvas id="net" width="760" height="300"></canvas>
+          <div class="netbadge">Top KOL: <b id="kol">@node_2f19</b> · reach <b id="kolReach">412k</b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>Live feed</h2><span class="tag" id="feedTag">classified in real time</span></div>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="hd"><h2>Trending topics</h2><span class="tag">ranked · momentum</span></div>
+        <div id="trends"></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>Audience demographics</h2><span class="tag">inferred · aggregate</span></div>
+        <div class="demo" id="demo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>UI prototype — synthetic data.</b> Every panel is wired to a backend in the real build: collectors (<code>Telethon</code>, <code>PRAW</code>, YouTube API) feed a time-stamped store; a HuggingFace transformer does emotion &amp; sarcasm; <code>BERTopic</code> drives trends; <code>networkx</code> computes centrality for the graph. Demographics are <b>inferred and aggregate-only</b> — handles are anonymized (<code>@node_id</code>) by design for privacy.
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s));};
+  function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+  /* ---------- KPI count-up ---------- */
+  $$('.kpi .v').forEach(function(el){
+    var target=+el.dataset.kpi, suf=el.dataset.suffix||'', t0=null, dur=1100;
+    function step(ts){ if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/dur), e=1-Math.pow(1-p,3);
+      var val=Math.round(target*e);
+      el.textContent=val.toLocaleString()+suf; if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  });
+  /* mini sparklines in KPIs */
+  $$('.kpi .spark').forEach(function(c){ miniSpark(c, css('--accent')); });
+  function miniSpark(c,color){
+    var ctx=c.getContext('2d'),w=c.width,h=c.height,n=16,pts=[];
+    for(var i=0;i<n;i++)pts.push(0.3+Math.random()*0.6*(i/n)+Math.random()*0.15);
+    ctx.beginPath();
+    pts.forEach(function(v,i){var x=w*i/(n-1),y=h-v*h*0.9-2;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=color;ctx.lineWidth=1.4;ctx.globalAlpha=.8;ctx.stroke();
+  }
+
+  /* ---------- platform chips ---------- */
+  $('#plats').addEventListener('click',function(e){
+    var b=e.target.closest('.chip'); if(!b)return;
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true'?'false':'true');
+  });
+
+  /* ---------- sentiment stream graph (animated draw) ---------- */
+  var sc=$('#sent'), sx=sc.getContext('2d');
+  var EM=[['--pos',.30],['--exc',.16],['--anx',.14],['--sar',.10],['--neg',.30]];
+  var HRS=48, series=EM.map(function(e){
+    var base=e[1],arr=[]; for(var i=0;i<HRS;i++){
+      var wave=Math.sin(i/6+Math.random())*0.05+ (i>32? (e[0]==='--neg'?0.06:-0.02):0);
+      arr.push(Math.max(0.02,base+wave+ (Math.random()-0.5)*0.04));
+    } return {c:css(e[0]),v:arr};
+  });
+  function drawSent(prog){
+    var w=sc.clientWidth,h=sc.clientHeight; sc.width=w*dpr;sc.height=h*dpr;sx.setTransform(dpr,0,0,dpr,0,0);
+    sx.clearRect(0,0,w,h);
+    sx.strokeStyle=css('--grid');sx.lineWidth=1;
+    for(var g=0;g<=4;g++){var y=h*g/4+.5;sx.beginPath();sx.moveTo(0,y);sx.lineTo(w,y);sx.stroke();}
+    var shown=Math.floor(HRS*prog);
+    // stacked areas
+    var stack=new Array(HRS).fill(0);
+    series.forEach(function(s){
+      sx.beginPath();
+      for(var i=0;i<=shown;i++){var x=w*i/(HRS-1),yb=h-stack[i]*h*1.5,yt=h-(stack[i]+s.v[i])*h*1.5;
+        i?sx.lineTo(x,yt):sx.moveTo(x,yt);}
+      for(i=shown;i>=0;i--){x=w*i/(HRS-1);yb=h-stack[i]*h*1.5;sx.lineTo(x,yb);}
+      sx.closePath();sx.globalAlpha=.85;sx.fillStyle=s.c;sx.fill();sx.globalAlpha=1;
+      for(i=0;i<HRS;i++)stack[i]+=s.v[i];
+    });
+    // moving scan line
+    if(prog<1){var sxp=w*shown/(HRS-1);sx.strokeStyle='rgba(221,229,242,.5)';sx.beginPath();sx.moveTo(sxp,0);sx.lineTo(sxp,h);sx.stroke();}
+  }
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+
+  /* ---------- influence network ---------- */
+  var nc=$('#net'), nx=nc.getContext('2d');
+  var nodes=[],edges=[],pulses=[];
+  var SENT=['--pos','--exc','--anx','--sar','--neg'];
+  function buildNet(){
+    nodes=[];edges=[];
+    var hubs=5;
+    for(var i=0;i<hubs;i++){
+      nodes.push({hub:true,x:0,y:0,r:9+Math.random()*5,c:css(SENT[i%SENT.length]),
+        vx:0,vy:0,cluster:i,reach:(120+Math.random()*320)|0});
+    }
+    for(var j=0;j<44;j++){
+      var cl=(Math.random()*hubs)|0;
+      nodes.push({hub:false,x:0,y:0,r:2.4+Math.random()*3,c:css(SENT[(Math.random()*SENT.length)|0]),
+        vx:0,vy:0,cluster:cl});
+    }
+    // edges: satellites to their hub + some cross links
+    for(var k=hubs;k<nodes.length;k++){
+      var h=nodes[k].cluster; edges.push([k,h]);
+      if(Math.random()<0.25){var o=(Math.random()*hubs)|0; edges.push([k,o]);}
+    }
+    for(i=0;i<hubs;i++)for(j=i+1;j<hubs;j++)if(Math.random()<0.5)edges.push([i,j]);
+    layout();
+  }
+  function layout(){
+    var w=nc.clientWidth||760,h=nc.clientHeight||300;
+    // seed clustered positions
+    var hubs=nodes.filter(function(n){return n.hub;}).length;
+    nodes.forEach(function(n,i){
+      var ca=(n.cluster/hubs)*Math.PI*2;
+      var cxp=w/2+Math.cos(ca)*w*0.26, cyp=h/2+Math.sin(ca)*h*0.28;
+      if(n.hub){n.x=cxp;n.y=cyp;}
+      else{n.x=cxp+(Math.random()-0.5)*90;n.y=cyp+(Math.random()-0.5)*80;}
+    });
+    // few relaxation iterations
+    for(var it=0;it<60;it++){
+      for(var a=0;a<nodes.length;a++)for(var b=a+1;b<nodes.length;b++){
+        var dx=nodes[b].x-nodes[a].x,dy=nodes[b].y-nodes[a].y,d=Math.hypot(dx,dy)||1;
+        if(d<46){var f=(46-d)/d*0.5;nodes[a].x-=dx*f;nodes[a].y-=dy*f;nodes[b].x+=dx*f;nodes[b].y+=dy*f;}
+      }
+    }
+    // clamp
+    nodes.forEach(function(n){n.x=Math.max(14,Math.min(w-14,n.x));n.y=Math.max(14,Math.min(h-14,n.y));n.bx=n.x;n.by=n.y;});
+  }
+  var pt=0;
+  function drawNet(ts){
+    var w=nc.clientWidth,h=nc.clientHeight; nc.width=w*dpr;nc.height=h*dpr;nx.setTransform(dpr,0,0,dpr,0,0);
+    nx.clearRect(0,0,w,h);
+    // gentle drift
+    nodes.forEach(function(n,i){var t=ts/1000;n.x=n.bx+Math.sin(t*0.6+i)*(n.hub?1.5:3);n.y=n.by+Math.cos(t*0.5+i)*(n.hub?1.5:3);});
+    // edges
+    nx.lineWidth=1;
+    edges.forEach(function(e){var a=nodes[e[0]],b=nodes[e[1]];
+      nx.strokeStyle='rgba(77,159,255,.10)';nx.beginPath();nx.moveTo(a.x,a.y);nx.lineTo(b.x,b.y);nx.stroke();});
+    // pulses (spread animation)
+    if(!reduce && Math.random()<0.04 && pulses.length<6){
+      var e=edges[(Math.random()*edges.length)|0]; pulses.push({a:e[0],b:e[1],t:0,c:nodes[e[0]].c});
+    }
+    pulses.forEach(function(p){var a=nodes[p.a],b=nodes[p.b];p.t+=0.03;
+      var x=a.x+(b.x-a.x)*p.t,y=a.y+(b.y-a.y)*p.t;
+      nx.fillStyle=p.c;nx.globalAlpha=1-p.t;nx.beginPath();nx.arc(x,y,2.6,0,7);nx.fill();nx.globalAlpha=1;});
+    pulses=pulses.filter(function(p){return p.t<1;});
+    // nodes
+    nodes.forEach(function(n){
+      if(n.hub){nx.shadowColor=n.c;nx.shadowBlur=14;}
+      nx.fillStyle=n.c;nx.beginPath();nx.arc(n.x,n.y,n.r,0,7);nx.fill();nx.shadowBlur=0;
+      if(n.hub){nx.strokeStyle='rgba(255,255,255,.35)';nx.lineWidth=1;nx.stroke();}
+    });
+  }
+
+  /* ---------- trends ---------- */
+  var TRENDS=[
+    ['#Line3Opening','4,120 mentions','up','+318%'],
+    ['fare hike','2,860 mentions','hot','+142%'],
+    ['first ride','2,240 mentions','up','+96%'],
+    ['crowd management','1,730 mentions','hot','+74%'],
+    ['metro app down','1,190 mentions','hot','+61%'],
+    ['station art','940 mentions','up','+40%'],
+    ['last train timing','720 mentions','up','+22%']
+  ];
+  var th=$('#trends');
+  TRENDS.forEach(function(t,i){
+    var el=document.createElement('div');el.className='trend';
+    el.innerHTML='<div class="trank">'+(i+1)+'</div><div class="tmain"><div class="ttag">'+t[0]+
+      '</div><div class="tmeta">'+t[1]+'</div></div><canvas class="tspark" width="64" height="26"></canvas>'+
+      '<div class="tdelta '+t[2]+'">'+t[3]+'</div>';
+    th.appendChild(el);
+    var c=$('.tspark',el),ctx=c.getContext('2d'),n=18,pts=[];
+    var col=t[2]==='hot'?css('--anx'):css('--pos');
+    for(var k=0;k<n;k++)pts.push(0.2+Math.pow(k/n,1.6)*0.7+Math.random()*0.12);
+    ctx.beginPath();pts.forEach(function(v,k){var x=64*k/(n-1),y=26-v*24-1;k?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.lineTo(64,26);ctx.lineTo(0,26);ctx.closePath();ctx.globalAlpha=.12;ctx.fillStyle=col;ctx.fill();
+  });
+
+  /* ---------- demographics ---------- */
+  var DEMO=[
+    ['Age',[['18–24',34],['25–34',38],['35–44',18],['45+',10]]],
+    ['Top regions',[['Mumbai',41],['Pune',17],['Delhi',12],['Bengaluru',9]]],
+    ['Language',[['English',52],['Hindi',31],['Marathi',14]]]
+  ];
+  var dh=$('#demo');
+  DEMO.forEach(function(g){
+    var grp=document.createElement('div');grp.className='dgroup';
+    var html='<div class="dt">'+g[0]+'</div>';
+    g[1].forEach(function(r){html+='<div class="drow"><span class="dl">'+r[0]+
+      '</span><div class="dbar"><i data-w="'+r[1]+'"></i></div><span class="dval">'+r[1]+'%</span></div>';});
+    grp.innerHTML=html;dh.appendChild(grp);
+  });
+  setTimeout(function(){$$('.dbar i').forEach(function(i){i.style.width=i.dataset.w+'%';});},300);
+
+  /* ---------- live feed ---------- */
+  var EMO={
+    supportive:['--pos','supportive'],excitement:['--exc','excitement'],
+    anxiety:['--anx','anxiety'],sarcasm:['--sar','sarcasm'],against:['--neg','against'],neutral:['--neu','neutral']
+  };
+  var POSTS=[
+    ['X','Finally took the first ride on Line 3, station looks world class 🚇','supportive'],
+    ['TG','fare went up again? classic. we asked for connectivity not a premium subscription','sarcasm'],
+    ['RD','Genuinely worried about the crowd at interchange during peak, felt unsafe today','anxiety'],
+    ['YT','been waiting 6 years for this line, cannot believe its finally running','excitement'],
+    ['X','the metro app crashed twice while booking, fix your backend before launch day','against'],
+    ['TG','ridership numbers look solid for day one, good sign for the corridor','supportive'],
+    ['RD','anyone know the last train timing from the airport stretch?','neutral'],
+    ['X','₹40 for 8km is steep for daily commute honestly','against'],
+    ['YT','the station art at the central hub is stunning, real civic pride moment','supportive'],
+    ['TG','packed already at 9am, hope they add more coaches soon','anxiety'],
+    ['X','wow a train that runs on time in this city, never thought id see the day','sarcasm'],
+    ['RD','smooth interchange, clear signage, this is how transit should feel','supportive']
+  ];
+  var PLATNAME={X:'X',TG:'Telegram',RD:'Reddit',YT:'YouTube',IG:'Instagram'};
+  var feed=$('#feed'), pi=0;
+  function idHash(){return Math.random().toString(16).slice(2,6);}
+  function addPost(){
+    var p=POSTS[pi%POSTS.length];pi++;
+    var e=EMO[p[2]],col=css(e[0]);
+    var el=document.createElement('div');el.className='post';
+    el.innerHTML='<div class="av" style="background:'+col+'">'+p[0]+'</div>'+
+      '<div class="pbody"><div class="pmeta"><span class="phandle">@node_'+idHash()+
+      '</span><span class="pplat">'+PLATNAME[p[0]]+'</span>'+
+      '<span class="emo" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'55">'+e[1]+
+      '</span></div><div class="ptext">'+p[1]+'</div></div>';
+    feed.insertBefore(el,feed.firstChild);
+    while(feed.children.length>14)feed.removeChild(feed.lastChild);
+  }
+  for(var s=0;s<5;s++)addPost();
+  if(!reduce) setInterval(addPost, 2600);
+
+  /* ---------- boot animations ---------- */
+  buildNet();
+  var sp=0, sentDone=false;
+  function frame(ts){
+    if(!sentDone){ sp+=reduce?1:0.012; if(sp>=1){sp=1;sentDone=true;} drawSent(sp); }
+    drawNet(ts);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  window.addEventListener('resize',function(){layout();drawSent(sentDone?1:sp);});
+})();
+</script>

@@ -1,0 +1,20 @@
+# Node
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.env
+
+# ML model/cache files
+backend/models/hf_cache/
+
+# OS
+.DS_Store
+Thumbs.db

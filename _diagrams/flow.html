@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body{margin:0;background:#ffffff;font-family:"Trebuchet MS",system-ui,sans-serif}
+  .stage{padding:24px}
+  .diagram{display:inline-block}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<script>
+const diagrams = {
+  combined: `flowchart TB
+    subgraph FE["FRONTEND — React / Streamlit"]
+      direction TB
+      FE1["User enters topic / target"] --> FE2["Dashboard: sentiment · trends ·<br/>demographics · influence graph"] --> FE3["Alerts &amp; diffusion replay"]
+    end
+    subgraph BE["BACKEND — FastAPI + collectors + DB"]
+      direction TB
+      BE1["Collectors<br/>Telegram · Reddit · YouTube · X"] --> BE2{{"Normalize schema"}} --> BE3[["Queue — Kafka / Redis"]] --> BE4[("Stores<br/>raw · time-series · graph")] --> BE5["Aggregation service"] --> BE6[/"REST API"/]
+      BE4 --> BE7["Alerts engine"] --> BE6
+    end
+    subgraph ML["ML PIPELINE — inference / serving"]
+      direction TB
+      ML1["Sentiment + sarcasm"]
+      ML2["Demographics"]
+      ML3["Topics + trend forecast"]
+      ML4["Network / KOLs"]
+      ML5["Coordination detection"]
+    end
+    subgraph TR["ML TRAINING LOOP — offline"]
+      direction TB
+      TR1[("Labeled datasets<br/>emotion · sarcasm · Hinglish")] --> TR2["Preprocess + features"] --> TR3["Train / fine-tune"] --> TR4["Evaluate · F1"] --> TR5{"Good enough?"}
+      TR5 -->|no| TR3
+      TR5 -->|yes| TR6["Model registry"]
+    end
+    FE1 -->|query| BE6
+    BE6 -->|insights JSON| FE2
+    BE4 -->|raw posts| ML1
+    BE4 -->|raw posts| ML2
+    BE4 -->|raw posts| ML3
+    BE4 -->|graph edges| ML4
+    BE4 -->|graph + timing| ML5
+    ML1 -->|labels| BE4
+    ML2 -->|demographics| BE4
+    ML3 -->|topics + forecast| BE4
+    ML4 -->|influencers| BE4
+    ML5 -->|coordination score| BE7
+    TR6 -->|deploy| ML1
+    TR6 -->|deploy| ML2
+    TR6 -->|deploy| ML3
+    BE4 -.->|sampled data for re-labeling| TR1
+    classDef fe fill:#eef4ff,stroke:#4d7fbf,color:#12243b;
+    classDef be fill:#eafaf3,stroke:#2f9e6b,color:#0f2a1e;
+    classDef ml fill:#fff3e0,stroke:#c88a1a,color:#3a2a08;
+    classDef tr fill:#f3edff,stroke:#8a5cc0,color:#2a1a3f;
+    class FE1,FE2,FE3 fe;
+    class BE1,BE2,BE3,BE4,BE5,BE6,BE7 be;
+    class ML1,ML2,ML3,ML4,ML5 ml;
+    class TR1,TR2,TR3,TR4,TR5,TR6 tr;`,
+
+  frontend: `flowchart TB
+    U["User enters topic / target<br/>e.g. #CityMetroLine3"] --> V["Dashboard"]
+    V --> V1["Sentiment timeline"]
+    V --> V2["Trending topics"]
+    V --> V3["Demographics"]
+    V --> V4["Influence graph + replay"]
+    V --> V5["Alerts panel"]
+    V -->|query| API[("Backend API")]
+    API -->|insights JSON| V
+    classDef fe fill:#eef4ff,stroke:#4d7fbf,color:#12243b;
+    classDef ext fill:#eafaf3,stroke:#2f9e6b,color:#0f2a1e;
+    class U,V,V1,V2,V3,V4,V5 fe;
+    class API ext;`,
+
+  backend: `flowchart TB
+    C["Collectors<br/>Telegram · Reddit · YouTube · X"] --> N{{"Normalize to common schema"}}
+    N --> Q[["Queue — Kafka / Redis"]]
+    Q --> DB[("Stores<br/>raw · time-series · graph")]
+    DB --> AG["Aggregation service"]
+    DB --> AL["Alerts engine"]
+    AG --> API[/"REST API"/]
+    AL --> API
+    DB -->|raw data| MLP[["ML Pipeline"]]
+    MLP -->|enriched results| DB
+    API -->|insights| FEX[("Frontend")]
+    classDef be fill:#eafaf3,stroke:#2f9e6b,color:#0f2a1e;
+    classDef ext fill:#f3edff,stroke:#8a5cc0,color:#2a1a3f;
+    class C,N,Q,DB,AG,AL,API be;
+    class MLP,FEX ext;`,
+
+  mlpipeline: `flowchart TB
+    IN[("Raw posts + graph<br/>from Backend")] --> S["Sentiment + sarcasm"]
+    IN --> D["Demographics inference"]
+    IN --> T["Topic model + trend forecast"]
+    IN --> G["Network analysis / KOLs"]
+    IN --> CO["Coordination / bot detection"]
+    S --> OUT[("Write enriched results<br/>back to Backend DB")]
+    D --> OUT
+    T --> OUT
+    G --> OUT
+    CO --> OUT
+    REG["Model registry"] -.->|deployed models| S
+    REG -.-> D
+    REG -.-> T
+    classDef ml fill:#fff3e0,stroke:#c88a1a,color:#3a2a08;
+    classDef ext fill:#eafaf3,stroke:#2f9e6b,color:#0f2a1e;
+    classDef tr fill:#f3edff,stroke:#8a5cc0,color:#2a1a3f;
+    class S,D,T,G,CO ml;
+    class IN,OUT ext;
+    class REG tr;`,
+
+  training: `flowchart TB
+    DS[("Labeled datasets<br/>emotion · sarcasm · Hinglish")] --> P["Preprocess + feature build"]
+    P --> TR["Train / fine-tune models"]
+    TR --> EV["Evaluate · F1 · precision · recall"]
+    EV --> Q{"Good enough?"}
+    Q -->|no| TR
+    Q -->|yes| REG["Model registry (versioned)"]
+    REG -->|deploy| SERV[["ML Pipeline (serving)"]]
+    PROD[("Sampled production data")] -.->|re-label| DS
+    classDef tr fill:#f3edff,stroke:#8a5cc0,color:#2a1a3f;
+    classDef ext fill:#fff3e0,stroke:#c88a1a,color:#3a2a08;
+    class DS,P,TR,EV,Q,REG,PROD tr;
+    class SERV ext;`
+};
+
+mermaid.initialize({startOnLoad:false, theme:'base', flowchart:{htmlLabels:true, curve:'basis'},
+  themeVariables:{fontFamily:'Trebuchet MS, sans-serif', fontSize:'15px'}});
+
+window.rendered = {};
+(async function(){
+  const stage = document.getElementById('stage');
+  for (const [key, code] of Object.entries(diagrams)){
+    const {svg} = await mermaid.render('m_'+key, code);
+    const wrap = document.createElement('div');
+    wrap.className='diagram'; wrap.id='wrap_'+key; wrap.innerHTML=svg;
+    stage.appendChild(wrap);
+    window.rendered[key]=true;
+  }
+  window.ALL_DONE=true;
+})();
+
+window.rasterize = function(key, scale){
+  return new Promise((resolve,reject)=>{
+    const svg = document.querySelector('#wrap_'+key+' svg');
+    if(!svg){reject('no svg');return;}
+    const vb = svg.viewBox.baseVal;
+    const w = (vb && vb.width) ? vb.width : svg.getBoundingClientRect().width;
+    const h = (vb && vb.height) ? vb.height : svg.getBoundingClientRect().height;
+    const clone = svg.cloneNode(true);
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    const xml = new XMLSerializer().serializeToString(clone);
+    const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w*scale); canvas.height = Math.round(h*scale);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = function(e){ reject('img load fail'); };
+    img.src = src;
+  });
+};
+</script>
+</body>
+</html>
