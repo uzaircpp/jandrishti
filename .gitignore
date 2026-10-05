@@ -1,20 +1,24 @@
-# Node
+# dependencies / build
 node_modules/
 dist/
 
-# Python
+# python
 __pycache__/
 *.pyc
 .venv/
 venv/
 
-# Environment / secrets
-.env
-*.env
-
-# ML model/cache files
+# models & caches (large or regenerable)
 backend/models/hf_cache/
+backend/models/*.session
+backend/models/snapshot.json
+backend/models/*.log
 
-# OS
+# secrets (never commit)
+backend/.env
+.env
+*.session
+
+# os
 .DS_Store
 Thumbs.db
